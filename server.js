@@ -1,10 +1,28 @@
-const express = require('express');
-const path = require('path');
+import express from 'express';
+import path from 'path';
+import logger from './middleware/logger.js';
+import {fileURLToPath} from 'url' ;
+import errorHandler from './middleware/error.js';
+import posts from './routes/posts.js';
+import notFound from './middleware/notFound.js';
+const port = process.env.PORT || 8000;
+
+// Get the directory name
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// body parser middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// Logger Middleware
+app.use(logger);
+
+
 //Setup Static Folder
-// app.use(express.static(path.join(__dirname, 'Public')));
+app.use(express.static(path.join(__dirname, 'Public')));
 
 // app.get('/', (req, res) => {
 //     res.sendFile(path.join(__dirname, 'Public', 'index.html'));
@@ -14,15 +32,13 @@ const app = express();
 //     res.sendFile(path.join(__dirname, 'Public', 'about.html'));
 // } );
 
-let posts = [
-    { id: 1, title: 'Post One' },
-    { id: 2, title: 'Post Two' },
-    { id: 3, title: 'Post Three' },
-    { id: 4, title: 'Post Four' },
-];
+// Routes
+app.use('/api/posts',posts);
 
-app.get('/api/posts', (req, res) => {
-    res.json(posts);
-} )
+// Error Handler
+app.use(notFound);
+app.use(errorHandler);
 
-app.listen(8000, ()=> console.log(`Server is listening to port 8000`) );
+
+
+app.listen(port, ()=> console.log(`Server is listening to port port ${port} `) );
